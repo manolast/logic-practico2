@@ -5,6 +5,7 @@ module Lab2 where
 ----------------------------------------------------
 
 import Prelude
+import Data.List (nub)
 
 -- Formalización del lenguaje
 type Var = String
@@ -55,19 +56,19 @@ irfalsa (x) = True
 --1.5)
 -- Completar con verdadera/falsa:
 -- fa es falsa bajo itodasfalsas
--- fb es ... bajo itodasfalsas
--- fc es ... bajo itodasfalsas
--- fd es ... bajo itodasfalsas
+-- fb es falsa bajo itodasfalsas
+-- fc es verdadera bajo itodasfalsas
+-- fd es falsa bajo itodasfalsas
 -- 
--- fa es ... bajo itodasverdaderas
--- fb es ... bajo itodasverdaderas
--- fc es ... bajo itodasverdaderas
--- fd es ... bajo itodasverdaderas
+-- fa es verdadera bajo itodasverdaderas
+-- fb es falsa bajo itodasverdaderas
+-- fc es verdadera bajo itodasverdaderas
+-- fd es falsa bajo itodasverdaderas
 --
--- fa es ... bajo irfalsa
--- fb es ... bajo irfalsa
--- fc es ... bajo irfalsa
--- fd es ... bajo irfalsa
+-- fa es verdadera bajo irfalsa
+-- fb es falsa bajo irfalsa
+-- fc es verdadera bajo irfalsa
+-- fd es falsa bajo irfalsa
 
 --1.6)
 creari :: [(Var, Bool)] -> (Var -> Bool)
@@ -87,13 +88,30 @@ data Clase = Tau | Contra | Cont | Sat | Fal
 
 --2.1)
 filas :: [Var] -> [Fila]
-filas = undefined
+filas [] = [[]]
+filas (x:xs) = [[(x, b)] ++ vs | b <- [True, False], vs <- filas xs]
 
 --2.2)
-tv :: L -> TV
-tv = undefined
+-- se usa la funcion vars de practico 1
+-- con vars agarras las variables, despues creas las filas posibles para esas variable
+-- para cada una de estas filas, se crea un i. Despues se hace eval de la funcion con ese i
+listarProp :: L -> [Var]
+listarProp (V x) = [x]
+listarProp (Neg form) = nub (listarProp form)
+listarProp (Bin a x b) = nub ((listarProp a) ++ (listarProp b)) 
 
---2.3)
+tv :: L -> TV
+tv formula = resultadosFilas (filas (listarProp formula)) formula
+
+resultadosFilas :: [Fila] -> L -> TV
+resultadosFilas [] formula = []
+resultadosFilas (x:filas) formula = (x, eval (creari x) formula): resultadosFilas filas formula
+
+--2.3) Considerar el tipo que enumera las clases de f´ormulas:
+-- data Clase = Tau | Contra | Cont | Sat | Fal
+-- Definir la funci´on es :: L → Clase → Bool, que determina si una f´ormula
+-- pertenece a una clase dada.
+-- Ejemplo: es (¬¬ p ∨ ¬ (q ∧ p)) Sat = True
 es :: L -> Clase -> Bool
 es = undefined
 
