@@ -100,20 +100,47 @@ listarProp (V x) = [x]
 listarProp (Neg form) = nub (listarProp form)
 listarProp (Bin a x b) = nub ((listarProp a) ++ (listarProp b)) 
 
-tv :: L -> TV
-tv formula = resultadosFilas (filas (listarProp formula)) formula
-
 resultadosFilas :: [Fila] -> L -> TV
 resultadosFilas [] formula = []
 resultadosFilas (x:filas) formula = (x, eval (creari x) formula): resultadosFilas filas formula
 
---2.3) Considerar el tipo que enumera las clases de f´ormulas:
--- data Clase = Tau | Contra | Cont | Sat | Fal
--- Definir la funci´on es :: L → Clase → Bool, que determina si una f´ormula
--- pertenece a una clase dada.
--- Ejemplo: es (¬¬ p ∨ ¬ (q ∧ p)) Sat = True
+tv :: L -> TV
+tv formula = resultadosFilas (filas (listarProp formula)) formula
+
+
+--2.3)
+
+resultados :: L -> [Bool]
+resultados formula = [snd x | x <- tv formula]
+
+esTau :: [Bool] -> Bool
+esTau [] = True
+esTau (bool:bools) = if bool == True then esTau bools
+                                  else False
+
+esContra :: [Bool] -> Bool
+esContra [] = True
+esContra (bool:bools) = if bool == False then esContra bools
+                                      else False
+
+esSat :: [Bool] -> Bool
+esSat [] = False
+esSat (bool:bools) = if bool == True then True
+                                  else esSat bools
+
+esCont :: [Bool] -> Bool
+esCont lista = not (esTau lista) && not (esContra lista)
+
+esFal :: [Bool] -> Bool
+esFal lista = (esCont lista) || (esContra lista)
+
+
 es :: L -> Clase -> Bool
-es = undefined
+es formula Tau = esTau (resultados formula)
+es formula Contra = esContra (resultados formula)
+es formula Sat = esSat (resultados formula)
+es formula Cont = esCont (resultados formula)
+es formula Fal = esFal (resultados formula)
 
 --2.4)
 -- Completar con tautología/contingencia/contradicción:
