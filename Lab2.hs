@@ -1,7 +1,7 @@
 module Lab2 where
 ------------------- Estudiante/s -------------------
--- Nombres y apellidos: 
--- Números: 
+-- Nombres y apellidos: Nicolas Piriz y Manuel Stapff
+-- Números: 310896 y 303636
 ----------------------------------------------------
 
 import Prelude
@@ -77,7 +77,9 @@ creari ((var, bool): xs) = \x -> if x == var then bool
                                               else (creari xs) x
 
 --1.7)
--- Responder aquí.
+--La interpretacion es igual siempre y cuando se den las siguientes condiciones:
+--1.La cantidad de variables en la interpretacion del punto 4 sea la misma
+--2.r, p y q esten presentes en dicha interpretacion y sus valores booleanos sean False, True y True respectivamente
 
 
 -- EJERCICIO 2 --
@@ -144,16 +146,34 @@ es formula Fal = esFal (resultados formula)
 
 --2.4)
 -- Completar con tautología/contingencia/contradicción:
--- fa es ...
--- fb es ...
--- fc es ...
--- fd es ...
+-- fa es una contingencia
+-- fb es una contingencia
+-- fc es una tautología
+-- fd es una contradicción
 
---2.5) 
+--2.5)
+modelosFalsos :: TV -> [Fila]
+modelosFalsos [] = []
+modelosFalsos ((fila, bool):xs) = if bool == False then [fila] ++ modelosFalsos(xs)
+                                                   else modelosFalsos(xs)
+
+negarTrues :: Fila -> [L]
+negarTrues [] = []
+negarTrues ((var, bool):xs) = if bool == True then [Neg(V var)] ++ negarTrues(xs)
+                                              else [V var] ++ negarTrues(xs)
+
+disyuncionesFnc :: [L] -> L
+disyuncionesFnc [] = Bin (V "x") Or (Neg (V "x"))
+disyuncionesFnc [x] = x
+disyuncionesFnc (x:xs) = Bin x Or (disyuncionesFnc (xs))
+
+conjuncionesFnc :: [L] -> L
+conjuncionesFnc [] = Bin (V "x") Or (Neg (V "x"))
+conjuncionesFnc [x] = x
+conjuncionesFnc (x:xs) = Bin x And (conjuncionesFnc (xs)) 
+
 fnc :: L -> L
-fnc = undefined
-
-
+fnc form = conjuncionesFnc (map (disyuncionesFnc) (map (negarTrues) (modelosFalsos (tv (form)))))
 ----------------------------------------------------------------------------------
 -- Pretty Printing (rudimentario)
 ----------------------------------------------------------------------------------
